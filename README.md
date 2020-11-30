@@ -1,5 +1,7 @@
 # Snscrape-Dataframe-Builder (Version 0.1.0)
-A dataframe builder extension for JustAnotherArchivist's [snscrape](https://github.com/JustAnotherArchivist/snscrape) API. Initially, the dataframe is exported just in CSV format, but will be avaliable in other formats (JSON for example). A keywords file reader was implemented to help extract several different keywords (avaliable to test in *test* folder).
+A dataframe builder extension for JustAnotherArchivist's [snscrape](https://github.com/JustAnotherArchivist/snscrape) API. Initially, the dataframe is exported just in CSV format, but will be avaliable in other formats (JSON for example). A keywords file reader was implemented to help extract several different keywords (avaliable to test in *test* folder). 
+
+**Initially avaliable just of Twitter!**
 
 ## Getting Started
 ### Required Settings
