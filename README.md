@@ -17,6 +17,7 @@ Inside folder containing SnscrapeDFBuilder.py and snscrape_crawler.py open termi
 
 ### Samples
 > python SnscrapeDFBuilder.py -hashtag NewYork --since 2019-04-10 --until 2020-01-20
+
 > python SnscrapeDFBuilder.py -list /tests/ex.txt -o /tests/res/output
 
 ## Arguments
