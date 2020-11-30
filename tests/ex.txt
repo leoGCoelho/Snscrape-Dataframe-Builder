@@ -1,0 +1,3 @@
+#MinhaProstataTaOk;2020-11-01;2020-11-30
+#cancerdeprostata;2020-11-01;2020-11-30
+#CancerDePróstata;2020-11-01;2020-11-30

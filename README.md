@@ -32,3 +32,5 @@ Inside folder containing SnscrapeDFBuilder.py and snscrape_crawler.py open termi
 - **--until DATETIME:** Only return results older the DATETIME
 - **--help:** Show help message and exit
 - **--version:** Show this script's version and exit
+- **--log:** Show progress log (collected data and timestamps)
+- **--not-show:** Do not show result at the end of execution
