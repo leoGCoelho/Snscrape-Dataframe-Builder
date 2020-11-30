@@ -1,5 +1,7 @@
 # Snscrape-Dataframe-Builder (Version 0.1.0)
-A dataframe builder extension for JustAnotherArchivist's [snscrape](https://github.com/JustAnotherArchivist/snscrape) API. Initially, the dataframe is exported just in CSV format, but will be avaliable in other formats (JSON for example). A keywords file reader was implemented to help extract several different keywords (avaliable to test in *test* folder).
+A dataframe builder extension for JustAnotherArchivist's [snscrape](https://github.com/JustAnotherArchivist/snscrape) API. Initially, the dataframe is exported just in CSV format, but will be avaliable in other formats (JSON for example). A keywords file reader was implemented to help extract several different keywords (avaliable to test in *test* folder). 
+
+**Initially avaliable just of Twitter!**
 
 ## Getting Started
 ### Required Settings
@@ -15,6 +17,7 @@ Inside folder containing SnscrapeDFBuilder.py and snscrape_crawler.py open termi
 
 ### Samples
 > python SnscrapeDFBuilder.py -hashtag NewYork --since 2019-04-10 --until 2020-01-20
+
 > python SnscrapeDFBuilder.py -list /tests/ex.txt -o /tests/res/output
 
 ## Arguments
