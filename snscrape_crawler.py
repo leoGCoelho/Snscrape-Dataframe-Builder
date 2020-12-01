@@ -20,7 +20,7 @@ def Build_MultExtractions(file_in, max_lim, log):
     #location = []
     sharedata = []
     url = []
-    months = []
+    media = []
 
     start_time = time.time()
     with open(file_in, 'r') as f:
@@ -54,6 +54,18 @@ def Build_MultExtractions(file_in, max_lim, log):
                 sharedata.append("likes=" + str(tweet.likeCount) + ";retweets=" + str(tweet.retweetCount) + ";replies=" + str(tweet.replyCount) + ";quotes=" + str(tweet.quoteCount))
                 url.append(tweet.url)
                 
+                if tweet.media:
+                    mediaurl = []
+                    for medium in tweet.media:
+                        if medium.type == "photo":
+                            mediaurl.append(medium.fullUrl)
+                        elif medium.type == "video":
+                            for v in medium.variants:
+                                mediaurl.append(v.url.replace("?tag=13", "").replace("?tag=10", ""))
+                    media.append(mediaurl)
+                else:
+                    media.append([])
+                
                 results = i
 
         end_hash_time = formatTime(time.time() - start_hash_time)
@@ -73,8 +85,9 @@ def Build_MultExtractions(file_in, max_lim, log):
     s5 = pd.Series(sharedata, name= 'share data')
     #s6 = pd.Series(location, name= 'location')
     s7 = pd.Series(url, name= 'url')
+    s8 = pd.Series(media, name= 'media')
 
-    df = pd.concat([s0,s1,s2,s3,s4,s5,s7], axis=1)
+    df = pd.concat([s0,s1,s2,s3,s4,s5,s7,s8], axis=1)
     return df
 
 
@@ -88,7 +101,7 @@ def Build_SingleExtraction(tweetdata, max_lim):
     #location = []
     sharedata = []
     url = []
-    months = []         
+    media = []
 
     start_time = time.time()
     if log:
@@ -123,6 +136,18 @@ def Build_SingleExtraction(tweetdata, max_lim):
             sharedata.append("likes=" + str(tweet.likeCount) + ";retweets=" + str(tweet.retweetCount) + ";replies=" + str(tweet.replyCount) + ";quotes=" + str(tweet.quoteCount))
             url.append(tweet.url)
             
+            if tweet.media:
+                mediaurl = []
+                for medium in tweet.media:
+                    if medium.type == "photo":
+                        mediaurl.append(medium.fullUrl)
+                    elif medium.type == "video":
+                        for v in medium.variants:
+                            mediaurl.append(v.url.replace("?tag=13", "").replace("?tag=10", ""))
+                media.append(mediaurl)
+            else:
+                media.append([])
+            
             results = i
 
     end_time = formatTime(time.time() - start_time)
@@ -139,8 +164,9 @@ def Build_SingleExtraction(tweetdata, max_lim):
     s5 = pd.Series(sharedata, name= 'share data')
     #s6 = pd.Series(location, name= 'location')
     s7 = pd.Series(url, name= 'url')
+    s8 = pd.Series(media, name= 'media')
 
-    df = pd.concat([s0,s1,s2,s3,s4,s5,s7], axis=1)
+    df = pd.concat([s0,s1,s2,s3,s4,s5,s7,s8], axis=1)
     return df
 
 
