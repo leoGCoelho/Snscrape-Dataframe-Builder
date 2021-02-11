@@ -33,6 +33,7 @@ Inside folder containing SnscrapeDFBuilder.py and snscrape_crawler.py open termi
 - **--max-limit N:** Only return the first N results
 - **--since DATETIME:** Only return results newer the DATETIME
 - **--until DATETIME:** Only return results older the DATETIME
+- **--not-show:** Repeat a string in all rows
 - **--help:** Show help message and exit
 - **--version:** Show this script's version and exit
 - **--log:** Show progress log (collected data and timestamps)

@@ -1,7 +1,24 @@
-import pandas as pd
+import os
+try:
+    import pandas as pd
+except:
+    os.system('pip3 install -r requirements')
+    import pandas as pd
 import snscrape.modules.twitter as sntwitter
 import time
 import re
+from multiprocessing import Process
+
+username = []
+date = []
+lang = []
+text = []
+likes = []
+#location = []
+sharedata = []
+url = []
+media = []
+repeated = []
 
 
 def formatTime(val_time):
@@ -11,16 +28,19 @@ def formatTime(val_time):
 
 
 
-def Build_MultExtractions(file_in, max_lim, log):
-    username = []
-    date = []
-    lang = []
-    text = []
-    likes = []
-    #location = []
-    sharedata = []
-    url = []
-    media = []
+def Build_MultExtractions(file_in, max_lim, log, repeatdata):
+
+    global username
+    global date
+    global lang
+    global text
+    global likes
+    #global location
+    global sharedata
+    global url
+    global media
+    global repeated
+    procs = []
 
     start_time = time.time()
     with open(file_in, 'r') as f:
@@ -28,80 +48,117 @@ def Build_MultExtractions(file_in, max_lim, log):
     f.close()
 
     for line in lines:
-        start_hash_time = time.time()
-        line = re.sub(r'[ˆ\n]', r'', line)
-        tweetdata = line.split(';')
-
-        if log:
-            print( "Extracting " + tweetdata[0] + " in " + str(tweetdata[1]) + " >> " + str(tweetdata[2]) + " ...")
-        results = 0
-
-        # Extract data
-        for i,tweet in enumerate(sntwitter.TwitterSearchScraper(tweetdata[0] + " since:" + tweetdata[1] + " until:" + tweetdata[2]).get_items()):
-
-            if (i > max_lim) and (max_lim > 0):   # Max limit of results
-                if log:
-                    print("Maximum Limit of Extraction! Extraction stopped!")
-                break
-            
-            if (text.count(tweet.content) == 0) or (username.count(tweet.user.username) == 0): # Check for duplicates
-                username.append(tweet.user.username)
-                date.append(tweet.date)
-                lang.append(tweet.lang)
-                text.append(tweet.content)
-                likes.append(tweet.likeCount)
-                #location.append(tweet.location)
-                sharedata.append("likes=" + str(tweet.likeCount) + ";retweets=" + str(tweet.retweetCount) + ";replies=" + str(tweet.replyCount) + ";quotes=" + str(tweet.quoteCount))
-                url.append(tweet.url)
-                
-                if tweet.media:
-                    mediaurl = []
-                    for medium in tweet.media:
-                        if medium.type == "photo":
-                            mediaurl.append(medium.fullUrl)
-                        elif medium.type == "video":
-                            for v in medium.variants:
-                                mediaurl.append(v.url.replace("?tag=13", "").replace("?tag=10", ""))
-                    media.append(mediaurl)
-                else:
-                    media.append([])
-                
-                results = i
-
-        end_hash_time = formatTime(time.time() - start_hash_time)
-        if log:
-            print(str(results), tweetdata[0], "tweet(s) extracted in {:0>2}:{:0>2}:{:05.2f}".format(int(end_hash_time[0]), int(end_hash_time[1]), end_hash_time[2]), "\n")
-
+        if repeatdata != []:
+            extract(line, max_lim, log, repeatdata[1])
+        else:
+            extract(line, max_lim, log, "")
     end_time = formatTime(time.time() - start_time)
     if log:
         print("\nAll data extracted: ", str(len(username)), "Tweets in {:0>2}:{:0>2}:{:05.2f}".format(int(end_time[0]), int(end_time[1]), end_time[2]), "\n\n")
 
-    # Build Dataframe
-    s0 = pd.Series(username, name= 'username')
-    s1 = pd.Series(date, name= 'date')
-    s2 = pd.Series(lang, name= 'lang')
-    s3 = pd.Series(text, name= 'text')
-    s4 = pd.Series(likes, name= 'likes')
-    s5 = pd.Series(sharedata, name= 'share data')
-    #s6 = pd.Series(location, name= 'location')
-    s7 = pd.Series(url, name= 'url')
-    s8 = pd.Series(media, name= 'media')
+    if repeatdata == []:
+        # Build Dataframe
+        s0 = pd.Series(username, name= 'username')
+        s1 = pd.Series(date, name= 'date')
+        s2 = pd.Series(lang, name= 'lang')
+        s3 = pd.Series(text, name= 'text')
+        s4 = pd.Series(likes, name= 'likes')
+        s5 = pd.Series(sharedata, name= 'share data')
+        #s6 = pd.Series(location, name= 'location')
+        s7 = pd.Series(url, name= 'url')
+        s8 = pd.Series(media, name= 'media')
 
-    df = pd.concat([s0,s1,s2,s3,s4,s5,s7,s8], axis=1)
+        df = pd.concat([s0,s1,s2,s3,s4,s5,s7,s8], axis=1)
+
+    else:
+        # Build Dataframe
+        s0 = pd.Series(username, name= 'username')
+        s1 = pd.Series(date, name= 'date')
+        s2 = pd.Series(lang, name= 'lang')
+        s3 = pd.Series(text, name= 'text')
+        s4 = pd.Series(likes, name= 'likes')
+        s5 = pd.Series(sharedata, name= 'share data')
+        #s6 = pd.Series(location, name= 'location')
+        s7 = pd.Series(url, name= 'url')
+        s8 = pd.Series(media, name= 'media')
+        s9 = pd.Series(repeated, name=repeatdata[0])
+
+        df = pd.concat([s0,s1,s2,s3,s4,s5,s7,s8, s9], axis=1)
+
+
     return df
 
+def extract(line, max_lim, log, repeatinfo):
+    global username
+    global date
+    global lang
+    global text
+    global likes
+    #global location
+    global sharedata
+    global url
+    global media
+    global repeated
+
+    start_hash_time = time.time()
+    line = re.sub(r'[ˆ\n]', r'', line)
+    tweetdata = line.split(';')
+
+    if log:
+        print( "Extracting " + tweetdata[0] + " in " + str(tweetdata[1]) + " >> " + str(tweetdata[2]) + " ...")
+    results = 0
+
+    # Extract data
+    for i,tweet in enumerate(sntwitter.TwitterSearchScraper(tweetdata[0] + " since:" + tweetdata[1] + " until:" + tweetdata[2]).get_items()):
+
+        if (i > max_lim) and (max_lim > 0):   # Max limit of results
+            if log:
+                print("Maximum Limit of Extraction! Extraction stopped!")
+            break
+        
+        if (text.count(tweet.content) == 0) or (username.count(tweet.user.username) == 0): # Check for duplicates
+            username.append(tweet.user.username)
+            date.append(tweet.date)
+            lang.append(tweet.lang)
+            text.append(tweet.content)
+            likes.append(tweet.likeCount)
+            #location.append(tweet.location)
+            sharedata.append("likes=" + str(tweet.likeCount) + ";retweets=" + str(tweet.retweetCount) + ";replies=" + str(tweet.replyCount) + ";quotes=" + str(tweet.quoteCount))
+            url.append(tweet.url)
+            if repeatinfo != "":
+                repeated.append(repeatinfo)
+            
+            if tweet.media:
+                mediaurl = []
+                for medium in tweet.media:
+                    if medium.type == "photo":
+                        mediaurl.append(medium.fullUrl)
+                    elif medium.type == "video":
+                        for v in medium.variants:
+                            mediaurl.append(v.url.replace("?tag=13", "").replace("?tag=10", ""))
+                media.append(mediaurl)
+            else:
+                media.append([])
+            
+            results = i
+
+    end_hash_time = formatTime(time.time() - start_hash_time)
+    if log:
+        print(str(results), tweetdata[0], "tweet(s) extracted in {:0>2}:{:0>2}:{:05.2f}".format(int(end_hash_time[0]), int(end_hash_time[1]), end_hash_time[2]), "\n")
 
 
-def Build_SingleExtraction(tweetdata, max_lim):
-    username = []
-    date = []
-    lang = []
-    text = []
-    likes = []
-    #location = []
-    sharedata = []
-    url = []
-    media = []
+
+def Build_SingleExtraction(tweetdata, max_lim, log, repeatdata):
+    global username
+    global date
+    global lang
+    global text
+    global likes
+    #global location
+    global sharedata
+    global url
+    global media
+    global repeated
 
     start_time = time.time()
     if log:
@@ -135,7 +192,9 @@ def Build_SingleExtraction(tweetdata, max_lim):
             #location.append(tweet.location)
             sharedata.append("likes=" + str(tweet.likeCount) + ";retweets=" + str(tweet.retweetCount) + ";replies=" + str(tweet.replyCount) + ";quotes=" + str(tweet.quoteCount))
             url.append(tweet.url)
-            
+            #print(repeatdata)
+            if repeatdata != []:
+                repeated.append(repeatdata[1])
             if tweet.media:
                 mediaurl = []
                 for medium in tweet.media:
@@ -155,18 +214,36 @@ def Build_SingleExtraction(tweetdata, max_lim):
         print(str(results), tweetdata[0], "tweet(s) extracted in {:0>2}:{:0>2}:{:05.2f}".format(int(end_time[0]), int(end_time[1]), end_time[2]), "\n")
 
 
-    # Build Dataframe
-    s0 = pd.Series(username, name= 'username')
-    s1 = pd.Series(date, name= 'date')
-    s2 = pd.Series(lang, name= 'lang')
-    s3 = pd.Series(text, name= 'text')
-    s4 = pd.Series(likes, name= 'likes')
-    s5 = pd.Series(sharedata, name= 'share data')
-    #s6 = pd.Series(location, name= 'location')
-    s7 = pd.Series(url, name= 'url')
-    s8 = pd.Series(media, name= 'media')
+    if repeatdata == []:
+        # Build Dataframe
+        s0 = pd.Series(username, name= 'username')
+        s1 = pd.Series(date, name= 'date')
+        s2 = pd.Series(lang, name= 'lang')
+        s3 = pd.Series(text, name= 'text')
+        s4 = pd.Series(likes, name= 'likes')
+        s5 = pd.Series(sharedata, name= 'share data')
+        #s6 = pd.Series(location, name= 'location')
+        s7 = pd.Series(url, name= 'url')
+        s8 = pd.Series(media, name= 'media')
 
-    df = pd.concat([s0,s1,s2,s3,s4,s5,s7,s8], axis=1)
+        df = pd.concat([s0,s1,s2,s3,s4,s5,s7,s8], axis=1)
+
+    else:
+        # Build Dataframe
+        s0 = pd.Series(username, name= 'username')
+        s1 = pd.Series(date, name= 'date')
+        s2 = pd.Series(lang, name= 'lang')
+        s3 = pd.Series(text, name= 'text')
+        s4 = pd.Series(likes, name= 'likes')
+        s5 = pd.Series(sharedata, name= 'share data')
+        #s6 = pd.Series(location, name= 'location')
+        s7 = pd.Series(url, name= 'url')
+        s8 = pd.Series(media, name= 'media')
+        s9 = pd.Series(repeated, name= repeatdata[0])
+
+        df = pd.concat([s0,s1,s2,s3,s4,s5,s7,s8,s9], axis=1)
+
+
     return df
 
 
