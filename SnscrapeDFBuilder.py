@@ -3,6 +3,7 @@ import re
 import sys
 import snscrape_crawler as scrawler
 import snscrape_db as db
+import json
 
 tweetdata = []
 dbdata = []
@@ -75,7 +76,7 @@ try:
             id = sys.argv.index("--max-limit")
             limit = int(sys.argv[id+1])
         else:
-            limit = 0
+            limit = 100000
 
         # Output
         if "-o" in sys.argv:
@@ -137,12 +138,14 @@ else:
 print('\n')
 
 if file_out != "":
-    try:
-        file_out = re.sub(r'.csv', r'', file_out)
-    except:
-        x=0
-    #df.to_json(file_out + ".csv", orient="index")
-    df.to_csv(file_out + ".csv", sep=';')
+    if ".json" in file_out:
+        df.to_json(file_out)
+
+    elif ".csv" in file_out:
+        df.to_csv(file_out, sep=';')
+
+    elif not("." in file_out):
+        df.to_csv(file_out + ".csv", sep=';')
 
 if finalprint:
     print(df)
